@@ -1,0 +1,67 @@
+====================================================================
+【Ikemen GO 全自动引擎与 3D Z轴横移系统 - 使用说明书】
+====================================================================
+
+[ ⚠️ 核心防忘警告：CNS 状态文件挂载 ]
+虽然现版本 Lua 脚本已支持目录自动识别，但由脚本生成的 Z 轴通用状态文件（z_axis_auto.cns）仍需在引擎中声明，否则 85200 和 85201 状态无法接管角色！
+
+操作路径：
+1. 打开游戏主目录下的 save/config.ini（部分整合包在 data/config.ini）。
+2. 定位到控制全局通用状态（Common States）的配置段。
+3. 将 save/z_axis_auto.cns 添加至通用状态的读取列表中。
+
+--------------------------------------------------------------------
+[ 一、 Lua 脚本安装 (自动识别机制) ]
+1. 将 Lua 代码保存为任意名称的 .lua 文件（如 auto_z_system.lua）。
+2. 将该文件放入游戏主目录下的 external/ 或 modules/ 文件夹中。
+3. 引擎启动时将自动识别并加载该脚本，无需手动挂载代码。
+
+--------------------------------------------------------------------
+[ 二、 脚本内部功能配置 (SYSTEM_CONFIG 区域) ]
+使用文本编辑器打开你的 Lua 脚本，按需修改顶部 SYSTEM_CONFIG 变量：
+
+> 自动化基础开关：
+ENABLE_AUTOLOAD_CHARS  = true  ; 开启自动读取并加载角色
+ENABLE_AUTOLOAD_STAGES = true  ; 开启自动读取并加载地图
+ENABLE_AUTO_MOVELIST   = true  ; 开启自动解析 .cmd 生成出招表
+
+> Z 轴横移系统设置：
+ENABLE_Z_AXIS = true           ; 开启 3D 地图 Z轴纵深移动总开关
+Z_MOVE_SPEED  = "2.2"          ; 纵深滑步速度（推荐 1.5 - 3.5）
+
+> 操作模式选择 (USE_UP_DOWN_FOR_Z_MOVE)：
+- 设为 true (经典模式)：方向键 ↑/↓ 变为 Z轴向里/向外移动。需配置备用跳跃键 (默认 w) 和备用蹲下键 (默认 长按 d)。
+- 设为 false (分离模式)：方向键 ↑/↓ 保持原生跳跃/下蹲。需配置 Z轴向里键 (默认 长按 w) 和 Z轴向外键 (默认 长按 d)。
+
+--------------------------------------------------------------------
+[ 三、 键位映射配置 (修改 common.cmd) ]
+无论选择上述哪种操作模式，都必须在 data/common.cmd 中注册对应的触发指令，系统才能获取按键信号。
+
+操作方法：
+打开 data/common.cmd，在文件最前方的 [Defaults] 标签下方，直接追加以下代码（请勿覆盖原有任何代码）：
+
+; --- Z轴系统自定义按键映射 ---
+[Command]
+name = "w"          
+command = w         
+time = 1            
+buffer.time = 1     
+buffer.hitpause = 1 
+buffer.pauseend = 1 
+
+[Command]
+name = "hold_w"     
+command = /w        
+time = 1
+buffer.time = 1
+buffer.hitpause = 1
+buffer.pauseend = 1
+
+[Command]
+name = "hold_d"     
+command = /d
+time = 1
+buffer.time = 1
+buffer.hitpause = 1
+buffer.pauseend = 1
+; -----------------------------
